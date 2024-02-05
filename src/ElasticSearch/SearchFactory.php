@@ -21,15 +21,24 @@ final class SearchFactory
     public static function create(Builder $builder, array $options = []): Search
     {
         $search = new Search();
-        $query = new QueryStringQuery($builder->query);
-        if (static::hasWhereFilters($builder)) {
-            $boolQuery = new BoolQuery();
-            $boolQuery = static::addWheres($builder, $boolQuery);
-            $boolQuery = static::addWhereIns($builder, $boolQuery);
-            $boolQuery->add($query, BoolQuery::MUST);
-            $search->addQuery($boolQuery);
+        if ($builder->query === '') {
+            if (static::hasWhereFilters($builder)) {
+                $boolQuery = new BoolQuery();
+                $boolQuery = static::addWheres($builder, $boolQuery);
+                $boolQuery = static::addWhereIns($builder, $boolQuery);
+                $search->addQuery($boolQuery);
+            }
         } else {
-            $search->addQuery($query);
+            $query = new QueryStringQuery($builder->query);
+            if (static::hasWhereFilters($builder)) {
+                $boolQuery = new BoolQuery();
+                $boolQuery = static::addWheres($builder, $boolQuery);
+                $boolQuery = static::addWhereIns($builder, $boolQuery);
+                $boolQuery->add($query, BoolQuery::MUST);
+                $search->addQuery($boolQuery);
+            } else {
+                $search->addQuery($query);
+            }
         }
         if (array_key_exists('from', $options)) {
             $search->setFrom($options['from']);
